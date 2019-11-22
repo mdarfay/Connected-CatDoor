@@ -1,2 +1,2 @@
-# Connected-CatFlap
-Connected catflap project, during IoT course at INSA Rennes.
+# Connected-CatDoor
+Connected catdoor project, during IoT course at INSA Rennes.
