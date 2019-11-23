@@ -1,4 +1,6 @@
 /*
+   Web comms from: https://github.com/bbx10/WebServer_tng/tree/master/examples/AdvancedWebServer
+   
    Copyright (c) 2015, Majenko Technologies
    All rights reserved.
 
@@ -32,68 +34,49 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
+#define MAX_CAT 10
+
+struct cat {
+  int id;
+  String cat_name;
+  unsigned int permission;
+};
+
+struct cat cats[MAX_CAT];
+int nbCats = 0;
 
 const IPAddress apIP(192, 168, 4, 1);
 const char *apssid = "CoCaDo";
 
 WebServer server(80);
 
-String makeRoot() {
-  String s = "<h1>Welcome in your cat manager !</h1>";
-  s += "<form method=\"post\" action=\"catInfos\">";
-  s += "<select name=\"cat_id\">";
-  s += "<option value=\"garfield\">Garfield</option>";
-  s += "<option value=\"toto\">Toto</option>";
-  s += "</select>";
-  s += "<input type=\"submit\" value=\"Search\"></form>";
-  return s;
-}
 
-void handleRoot() {
-  String s = makeRoot();
-  server.send(200, "text/html", makePage("Home", s));
-}
-
-void handleNotFound() {
-  String message = "File Not Found\n\n";
-  message += "URI: ";
-  message += server.uri();
-  message += "\nMethod: ";
-  message += (server.method() == HTTP_GET) ? "GET" : "POST";
-  message += "\nArguments: ";
-  message += server.args();
-  message += "\n";
-
-  for (uint8_t i = 0; i < server.args(); i++) {
-    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
-  }
-
-  server.send(404, "text/plain", message);
-}
-
+/**** SETUP AND LOOP ****/
 void setup(void) {
   m5.begin();
   Serial.begin(115200);
 
+  fillCats();
+  
   setupAccessPoint();
 }
 
-String catInfos(const String cat_id) {
-  String s = "<br><hr><h2>Current cat: " + cat_id + "</h2>";
-  s += "<form method=\"post\" action=\"updateCat\">";
-  s += "<input type=\"hidden\" value=\"" + cat_id +"\" name=\"cat_updated_id\" />";
-  s += "<br><label>OUT ? :</label>";
-  s += "<input type=\"radio\" name=\"rights\" value=\"1\" checked> Yes";
-  s += "<input type=\"radio\" name=\"rights\" value=\"0\"> No";
-  s += "<br><br><input type=\"submit\" value=\"Update\"></form>";
-  return s;
-}
+void fillCats() {
+  struct cat garfield;
+  garfield.cat_name = "Gargar";
+  garfield.permission = 0;
 
-void displayCatInfos() {
-  String cat_id = server.arg("cat_id");
-  String s = makeRoot();
-  s += catInfos(cat_id);
-  server.send(200, "text/html", makePage("Cat infos", s));
+  struct cat toto;
+  toto.cat_name = "Fofo";
+  toto.permission = 1;
+
+  garfield.id = nbCats;
+  cats[nbCats++] = garfield;
+  toto.id = nbCats;
+  cats[nbCats++] = toto;
+
+  Serial.println(toto.id + toto.cat_name + toto.permission);
+  //Serial.println(cats);
 }
 
 void setupAccessPoint() {
@@ -117,11 +100,80 @@ void setupAccessPoint() {
 void configServerHandlers() {
   server.on("/", handleRoot);
   server.on("/catInfos", displayCatInfos);
+  server.on("/updateCatInfos", updateCatInfos);
   server.onNotFound(handleNotFound);
 }
 
 void loop(void) {
   server.handleClient();
+}
+/**** END SETUP AND LOOP ****/
+
+
+/**** WEB PAGES ****/
+void handleRoot() {
+  String s = makeRoot();
+  server.send(200, "text/html", makePage("Home", s));
+}
+
+void displayCatInfos() {
+  int cat_id = server.arg("cat_id").toInt();
+  String s = makeRoot();
+  s += catInfos(cat_id);
+  server.send(200, "text/html", makePage("Cat infos", s));
+}
+
+void updateCatInfos() {
+  int cat_id = server.arg("cat_updated_id").toInt();
+  int permission_updated = server.arg("permission").toInt();
+  cats[cat_id].permission = permission_updated;
+  handleRoot();
+}
+
+void handleNotFound() {
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+
+  for (uint8_t i = 0; i < server.args(); i++) {
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+
+  server.send(404, "text/plain", message);
+}
+
+String makeRoot() {
+  String s = "<h1>Welcome in your cat manager !</h1>";
+  s += "<p>Choose a cat to change its permissions:</p>";
+  s += "<br><form method=\"post\" action=\"catInfos\">";
+  s += "<select name=\"cat_id\">";
+  for(int i=0; i<nbCats; i++) {
+    s += "<option value=\"" + String(cats[i].id) + "\">" + cats[i].cat_name + "</option>";
+  }
+  s += "</select>";
+  s += "<input type=\"submit\" value=\"Choose\"></form>";
+  return s;
+}
+
+String catInfos(const int cat_id) {
+  String s = "<br><hr><h2>Current cat: " + cats[cat_id].cat_name + "</h2>";
+  s += "<form method=\"post\" action=\"updateCatInfos\">";
+  s += "<input type=\"hidden\" value=\"" + String(cat_id) +"\" name=\"cat_updated_id\" />";
+  s += "<br><label>OUT ? :</label>";
+  if(cats[cat_id].permission) {
+    s += "<input type=\"radio\" name=\"permission\" value=\"1\" checked> Yes";
+    s += "<input type=\"radio\" name=\"permission\" value=\"0\"> No";
+  } else {
+    s += "<input type=\"radio\" name=\"permission\" value=\"1\"> Yes";
+    s += "<input type=\"radio\" name=\"permission\" value=\"0\" checked> No";
+  }
+  s += "<br><br><input type=\"submit\" value=\"Update\"></form>";
+  return s;
 }
 
 String makePage(String title, String contents) {
