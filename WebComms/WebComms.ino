@@ -99,6 +99,7 @@ void setupAccessPoint() {
 
 void configServerHandlers() {
   server.on("/", handleRoot);
+  server.on("/permissions", permissionsMenu);
   server.on("/catInfos", displayCatInfos);
   server.on("/updateCatInfos", updateCatInfos);
   server.onNotFound(handleNotFound);
@@ -112,14 +113,17 @@ void loop(void) {
 
 /**** WEB PAGES ****/
 void handleRoot() {
-  String s = makeRoot();
-  server.send(200, "text/html", makePage("Home", s));
+  server.send(200, "text/html", makePage( "Home", getRootHTML() ));
+}
+
+void permissionsMenu() {
+  server.send(200, "text/html", makePage( "Permissions", getPermissionsMenuHTML() ));
 }
 
 void displayCatInfos() {
   int cat_id = server.arg("cat_id").toInt();
-  String s = makeRoot();
-  s += catInfos(cat_id);
+  String s = getPermissionsMenuHTML();
+  s += getCatInfosHTML(cat_id);
   server.send(200, "text/html", makePage("Cat infos", s));
 }
 
@@ -127,7 +131,7 @@ void updateCatInfos() {
   int cat_id = server.arg("cat_updated_id").toInt();
   int permission_updated = server.arg("permission").toInt();
   cats[cat_id].permission = permission_updated;
-  handleRoot();
+  permissionsMenu();
 }
 
 void handleNotFound() {
@@ -147,8 +151,17 @@ void handleNotFound() {
   server.send(404, "text/plain", message);
 }
 
-String makeRoot() {
-  String s = "<h1>Welcome in your cat manager !</h1>";
+String getRootHTML() {
+  String s = "<h1>Welcome in your Connected Catdoor manager !</h1>";
+  s += "<form>";
+  s += "<button type=\"submit\" formaction=\"permissions\">MANAGE PERMISSIONS</button>";
+  s += "<br><button type=\"submit\" formaction=\"add\">ADD A CAT</button>";
+  s += "</form>";
+  return s;
+}
+
+String getPermissionsMenuHTML() {
+  String s = "<h2>Permissions menu</h2>";
   s += "<p>Choose a cat to change its permissions:</p>";
   s += "<br><form method=\"post\" action=\"catInfos\">";
   s += "<select name=\"cat_id\">";
@@ -160,7 +173,7 @@ String makeRoot() {
   return s;
 }
 
-String catInfos(const int cat_id) {
+String getCatInfosHTML(const int cat_id) {
   String s = "<br><hr><h2>Current cat: " + cats[cat_id].cat_name + "</h2>";
   s += "<form method=\"post\" action=\"updateCatInfos\">";
   s += "<input type=\"hidden\" value=\"" + String(cat_id) +"\" name=\"cat_updated_id\" />";
