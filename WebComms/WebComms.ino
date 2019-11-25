@@ -51,6 +51,7 @@ const IPAddress apIP(192, 168, 4, 1);
 const char *apssid = "CoCaDo";
 
 WebServer server(80);
+int serverUp = 0;
 
 
 /**** SETUP AND LOOP ****/
@@ -59,8 +60,8 @@ void setup(void) {
   Serial.begin(115200);
 
   fillCats();
-  
-  setupAccessPoint();
+
+  m5DisplayHome();
 }
 
 void fillCats() {
@@ -89,14 +90,25 @@ void setupAccessPoint() {
   WiFi.softAP(apssid);
   WiFi.mode(WIFI_AP);
 
-  M5.Lcd.print("Starting Access Point at \"");
-  M5.Lcd.print(apssid);
-  M5.Lcd.println("\"");
-
+  M5.Lcd.setTextSize(1);
+  M5.Lcd.println("Starting Access Point...");
+  
   configServerHandlers();
-
   server.begin();
-  M5.Lcd.print("HTTP server started");
+  
+  M5.Lcd.println("Access Point OK.");
+
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.setCursor(40, 65);
+  M5.Lcd.setTextColor(WHITE);
+  M5.Lcd.print("Connect to \"");
+  M5.Lcd.print(apssid);
+  M5.Lcd.println("\",");
+  M5.Lcd.setCursor(20, 90);
+  M5.Lcd.println("and go to 192.168.4.1 !");
+  M5.Lcd.setCursor(120, 130);
+  M5.Lcd.setTextColor(ORANGE);
+  M5.Lcd.println("=^._.^=");
 }
 
 void configServerHandlers() {
@@ -110,8 +122,42 @@ void configServerHandlers() {
   server.onNotFound(handleNotFound);
 }
 
+void m5DisplayHome() {
+  M5.Lcd.setTextColor(PINK);
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.setCursor(65, 10);
+  M5.Lcd.println("Connected CatDoor");
+  M5.Lcd.setCursor(3, 55);
+  M5.Lcd.println("Press button B to start");
+  M5.Lcd.println("connection");
+  //Arrow, vertical
+  M5.Lcd.drawLine(160, 180, 160, 239, RED);
+  M5.Lcd.drawLine(159, 180, 159, 239, RED);
+  M5.Lcd.drawLine(161, 180, 161, 239, RED);
+  //Arrow, left
+  M5.Lcd.drawLine(160, 239, 140, 210, RED);
+  M5.Lcd.drawLine(159, 239, 139, 210, RED);
+  M5.Lcd.drawLine(161, 239, 141, 210, RED);
+  //Arrow, right
+  M5.Lcd.drawLine(160, 239, 180, 210, RED);
+  M5.Lcd.drawLine(159, 239, 179, 210, RED);
+  M5.Lcd.drawLine(161, 239, 181, 210, RED);
+}
+
 void loop(void) {
-  server.handleClient();
+  if (M5.BtnB.wasPressed()) {
+    M5.Lcd.clear(BLACK);
+    M5.Lcd.setTextColor(GREEN);
+    M5.Lcd.setCursor(0,0);
+    setupAccessPoint();
+    serverUp = 1;
+  }
+  
+  if(serverUp) {
+    server.handleClient();
+  }
+  
+  M5.update();
 }
 /**** END SETUP AND LOOP ****/
 
@@ -183,13 +229,13 @@ String getHomeHTML() {
   String s = "<h1>Welcome in your Connected Catdoor manager !</h1>";
   s += "<form>";
   s += "<button type=\"submit\" formaction=\"permissions\">MANAGE PERMISSIONS</button>";
-  s += "<br><button type=\"submit\" formaction=\"scanCat\">ADD A CAT</button>";
+  s += "<br><br><button type=\"submit\" formaction=\"scanCat\">ADD A CAT</button>";
   s += "</form>";
   return s;
 }
 
 String getPermissionsMenuHTML() {
-  String s = "<form method=\"post\" action=\"home\"><button type=\"submit\">Home</button>";
+  String s = "<form method=\"post\" action=\"home\"><button type=\"submit\">Home</button></form>";
   s += "<br><h2>Permissions menu</h2>";
   s += "<p>Choose a cat to change its permissions:</p>";
   s += "<br><form method=\"post\" action=\"catInfos\">";
@@ -222,7 +268,7 @@ String getAddCatFormHTML(const int chip) {
   String s = "<h2>Enter informations for scanned cat</h2>";
   s += "<form method=\"post\" action=\"addCat\">";
   s += "<input type=\"hidden\" value=\"" + String(chip) +"\" name=\"chip\" />";
-  s += "<p>Name:</p><input name=\"cat_name\" length=64 type=\"text\">
+  s += "<p>Name:</p><input name=\"cat_name\" length=64 type=\"text\">";
   s += "<br><label>OUT ? :</label>";
   s += "<input type=\"radio\" name=\"permission\" value=\"1\" checked> Yes";
   s += "<input type=\"radio\" name=\"permission\" value=\"0\"> No";
