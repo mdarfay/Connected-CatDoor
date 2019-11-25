@@ -37,10 +37,12 @@
 #define MAX_CAT 10
 
 struct cat {
-  int id;
+  int chip;
   String cat_name;
   unsigned int permission;
 };
+
+//cat_id represents the position in cats of the cat
 
 struct cat cats[MAX_CAT];
 int nbCats = 0;
@@ -70,12 +72,12 @@ void fillCats() {
   toto.cat_name = "Fofo";
   toto.permission = 1;
 
-  garfield.id = nbCats;
+  garfield.chip = nbCats;
   cats[nbCats++] = garfield;
-  toto.id = nbCats;
+  toto.chip = nbCats;
   cats[nbCats++] = toto;
 
-  Serial.println(toto.id + toto.cat_name + toto.permission);
+  Serial.println(toto.chip + toto.cat_name + toto.permission);
   //Serial.println(cats);
 }
 
@@ -98,10 +100,13 @@ void setupAccessPoint() {
 }
 
 void configServerHandlers() {
-  server.on("/", handleRoot);
+  server.on("/", handleHome);
+  server.on("/home", handleHome);
   server.on("/permissions", permissionsMenu);
   server.on("/catInfos", displayCatInfos);
   server.on("/updateCatInfos", updateCatInfos);
+  server.on("/scanCat", scanCat);
+  server.on("/addCat", addCat);
   server.onNotFound(handleNotFound);
 }
 
@@ -112,8 +117,8 @@ void loop(void) {
 
 
 /**** WEB PAGES ****/
-void handleRoot() {
-  server.send(200, "text/html", makePage( "Home", getRootHTML() ));
+void handleHome() {
+  server.send(200, "text/html", makePage( "Home", getHomeHTML() ));
 }
 
 void permissionsMenu() {
@@ -134,6 +139,29 @@ void updateCatInfos() {
   permissionsMenu();
 }
 
+void scanCat() {
+  String s = "<p>Please scan your cat</p>";
+  server.send(200, "text/html", makePage("Scan", s));
+
+  // TODO : SCAN HERE TO ADD A CAT
+
+  int chip = 0; //FIXME chip = the thing scanned, identifying the cat
+  s = getAddCatFormHTML(chip);
+  server.send(200, "text/html", makePage("Add cat", s));
+}
+
+void addCat() {
+  // retrieve form informations
+  struct cat c;
+  c.chip = server.arg("chip").toInt();
+  c.cat_name = server.arg("cat_name");
+  c.permission = server.arg("permission").toInt();
+  
+  cats[nbCats++] = c;
+
+  handleHome(); // go back to main menu
+}
+
 void handleNotFound() {
   String message = "File Not Found\n\n";
   message += "URI: ";
@@ -151,22 +179,23 @@ void handleNotFound() {
   server.send(404, "text/plain", message);
 }
 
-String getRootHTML() {
+String getHomeHTML() {
   String s = "<h1>Welcome in your Connected Catdoor manager !</h1>";
   s += "<form>";
   s += "<button type=\"submit\" formaction=\"permissions\">MANAGE PERMISSIONS</button>";
-  s += "<br><button type=\"submit\" formaction=\"add\">ADD A CAT</button>";
+  s += "<br><button type=\"submit\" formaction=\"scanCat\">ADD A CAT</button>";
   s += "</form>";
   return s;
 }
 
 String getPermissionsMenuHTML() {
-  String s = "<h2>Permissions menu</h2>";
+  String s = "<form method=\"post\" action=\"home\"><button type=\"submit\">Home</button>";
+  s += "<br><h2>Permissions menu</h2>";
   s += "<p>Choose a cat to change its permissions:</p>";
   s += "<br><form method=\"post\" action=\"catInfos\">";
   s += "<select name=\"cat_id\">";
   for(int i=0; i<nbCats; i++) {
-    s += "<option value=\"" + String(cats[i].id) + "\">" + cats[i].cat_name + "</option>";
+    s += "<option value=\"" + String(i) + "\">" + cats[i].cat_name + "</option>";
   }
   s += "</select>";
   s += "<input type=\"submit\" value=\"Choose\"></form>";
@@ -186,6 +215,18 @@ String getCatInfosHTML(const int cat_id) {
     s += "<input type=\"radio\" name=\"permission\" value=\"0\" checked> No";
   }
   s += "<br><br><input type=\"submit\" value=\"Update\"></form>";
+  return s;
+}
+
+String getAddCatFormHTML(const int chip) {
+  String s = "<h2>Enter informations for scanned cat</h2>";
+  s += "<form method=\"post\" action=\"addCat\">";
+  s += "<input type=\"hidden\" value=\"" + String(chip) +"\" name=\"chip\" />";
+  s += "<p>Name:</p><input name=\"cat_name\" length=64 type=\"text\">
+  s += "<br><label>OUT ? :</label>";
+  s += "<input type=\"radio\" name=\"permission\" value=\"1\" checked> Yes";
+  s += "<input type=\"radio\" name=\"permission\" value=\"0\"> No";
+  s += "<br><br><input type=\"submit\" value=\"Save\"></form>";
   return s;
 }
 
