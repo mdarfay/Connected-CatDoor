@@ -93,7 +93,7 @@ void setupAccessPoint() {
   M5.Lcd.setTextSize(1);
   M5.Lcd.println("Starting Access Point...");
   
-  configServerHandlers();
+  configServerRoutes();
   server.begin();
   
   M5.Lcd.println("Access Point OK.");
@@ -111,12 +111,13 @@ void setupAccessPoint() {
   M5.Lcd.println("=^._.^=");
 }
 
-void configServerHandlers() {
+void configServerRoutes() {
   server.on("/", handleHome);
   server.on("/home", handleHome);
   server.on("/permissions", permissionsMenu);
   server.on("/catInfos", displayCatInfos);
   server.on("/updateCatInfos", updateCatInfos);
+  server.on("/scanNotice", scanNotice);
   server.on("/scanCat", scanCat);
   server.on("/addCat", addCat);
   server.onNotFound(handleNotFound);
@@ -185,14 +186,22 @@ void updateCatInfos() {
   permissionsMenu();
 }
 
-void scanCat() {
-  String s = "<p>Please scan your cat</p>";
+void scanNotice() {
+  String s = "<p>Grab your cat and prepare for scanning ! Follow instructions on LCD display on your Connected CatDoor.</p>";
+  s += "<br><form method=\"post\" action=\"scanCat\"><button type=\"submit\">Begin scan</button></form>";
   server.send(200, "text/html", makePage("Scan", s));
+}
+
+void scanCat() {
+  M5.Lcd.clear(BLACK);
+  M5.Lcd.setCursor(0,0);
+  M5.Lcd.setTextColor(WHITE);
+  M5.Lcd.println("Scan now !");
 
   // TODO : SCAN HERE TO ADD A CAT
 
   int chip = 0; //FIXME chip = the thing scanned, identifying the cat
-  s = getAddCatFormHTML(chip);
+  String s = getAddCatFormHTML(chip);
   server.send(200, "text/html", makePage("Add cat", s));
 }
 
@@ -229,7 +238,7 @@ String getHomeHTML() {
   String s = "<h1>Welcome in your Connected Catdoor manager !</h1>";
   s += "<form>";
   s += "<button type=\"submit\" formaction=\"permissions\">MANAGE PERMISSIONS</button>";
-  s += "<br><br><button type=\"submit\" formaction=\"scanCat\">ADD A CAT</button>";
+  s += "<br><br><button type=\"submit\" formaction=\"scanNotice\">ADD A CAT</button>";
   s += "</form>";
   return s;
 }
@@ -268,8 +277,8 @@ String getAddCatFormHTML(const int chip) {
   String s = "<h2>Enter informations for scanned cat</h2>";
   s += "<form method=\"post\" action=\"addCat\">";
   s += "<input type=\"hidden\" value=\"" + String(chip) +"\" name=\"chip\" />";
-  s += "<p>Name:</p><input name=\"cat_name\" length=64 type=\"text\">";
-  s += "<br><label>OUT ? :</label>";
+  s += "<label>Name: </label><input name=\"cat_name\" length=64 type=\"text\">";
+  s += "<br><br><label>OUT ? :</label>";
   s += "<input type=\"radio\" name=\"permission\" value=\"1\" checked> Yes";
   s += "<input type=\"radio\" name=\"permission\" value=\"0\"> No";
   s += "<br><br><input type=\"submit\" value=\"Save\"></form>";
