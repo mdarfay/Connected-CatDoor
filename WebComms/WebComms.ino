@@ -106,6 +106,8 @@ void configServerRoutes() {
   server.on("/scanNotice", scanNotice);
   server.on("/scanCat", scanCat);
   server.on("/addCat", addCat);
+  server.on("/deletionMenu", deletionMenu);
+  server.on("/deleteCat", deleteCat);
   server.onNotFound(handleNotFound);
 }
 
@@ -191,6 +193,17 @@ void addCat() {
   handleHome(); // go back to main menu
 }
 
+void deletionMenu() {
+  server.send(200, "text/html", makePage( "Deletion", getDeletionMenuHTML() ));
+}
+
+void deleteCat() {
+  int cat_id = server.arg("cat_id").toInt();
+  cats[cat_id] = cats[nbCats];
+  nbCats--;
+  handleHome();
+}
+
 void handleNotFound() {
   String message = "File Not Found\n\n";
   message += "URI: ";
@@ -215,6 +228,7 @@ String getHomeHTML() {
   s += "<form>";
   s += "<button type=\"submit\" formaction=\"permissions\">MANAGE PERMISSIONS</button>";
   s += "<br><br><button type=\"submit\" formaction=\"scanNotice\">ADD A CAT</button>";
+  s += "<br><br><button type=\"submit\" formaction=\"deletionMenu\">REMOVE A CAT</button>";
   s += "</form>";
   return s;
 }
@@ -258,6 +272,20 @@ String getAddCatFormHTML(const int chip) {
   s += "<input type=\"radio\" name=\"permission\" value=\"1\" checked> Yes";
   s += "<input type=\"radio\" name=\"permission\" value=\"0\"> No";
   s += "<br><br><input type=\"submit\" value=\"Save\"></form>";
+  return s;
+}
+
+String getDeletionMenuHTML() {
+  String s = "<form method=\"post\" action=\"home\"><button type=\"submit\">Home</button></form>";
+  s += "<br><h2>Remove cat menu</h2>";
+  s += "<p>Choose a cat to remove it:</p>";
+  s += "<br><form method=\"post\" action=\"deleteCat\">";
+  s += "<select name=\"cat_id\">";
+  for(int i=0; i<nbCats; i++) {
+    s += "<option value=\"" + String(i) + "\">" + cats[i].cat_name + "</option>";
+  }
+  s += "</select>";
+  s += "<input type=\"submit\" value=\"Remove\"></form>";
   return s;
 }
 
