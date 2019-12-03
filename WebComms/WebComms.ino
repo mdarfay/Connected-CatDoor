@@ -36,6 +36,7 @@
 #include <WebServer.h>
 #define MAX_CAT 10
 
+/** VAR TO MANAGE CATS **/
 struct cat {
   String chip;
   String cat_name;
@@ -45,39 +46,75 @@ struct cat {
 struct cat cats[MAX_CAT];
 int nbCats = 0;
 
+/** VAR WIFI **/
 const IPAddress apIP(192, 168, 4, 1);
 const char *apssid = "NeKoDo";
 
 WebServer server(80);
 int serverUp = 0;
 
+/** VAR SERVO **/
+// the number of the servo pin
+const int servoPin = 2;  // 2 corresponds to GPIO2
+int angle = 0;
+// setting PWM properties
+const int freq = 50;
+const int servoChannel = 0;
+const int resolution = 8;
+int isOpen = 1;
 
-/**** SETUP AND LOOP ****/
+/**** LOOP ****/
+void loop(void) {
+  M5.update();
+  if (M5.BtnB.wasPressed()) {
+    M5.Lcd.clear(BLACK);
+    M5.Lcd.setTextColor(GREEN);
+    M5.Lcd.setCursor(0,0);
+    setupAccessPoint();
+    serverUp = 1;
+  }
+  
+  if(serverUp) {
+    server.handleClient();
+  }
+
+  if(M5.BtnC.wasPressed()) {
+    server.close();
+    serverUp = 0;
+    WiFi.mode(WIFI_STA);
+    WiFi.disconnect();
+    lcdDrawHome();
+  }
+
+//  if(M5.BtnA.wasPressed()) {
+//    if(isOpen) {
+//      closeServo();
+//    } else {
+//      openServo();
+//    }
+//  }
+}
+/**** END LOOP ****/
+
+/**** SETUP ****/
 void setup(void) {
   m5.begin();
   Serial.begin(115200);
 
-  fillCats();
+  //setupServo();
 
   lcdDrawHome();
 }
 
-void fillCats() {
-  struct cat garfield;
-  garfield.cat_name = "Gargar";
-  garfield.permission = 0;
+void setupServo() {
+  // configure servo PWM functionalitites
+  ledcSetup(servoChannel, freq, resolution);
+  
+  // attach the channel to the GPIO to be controlled
+  ledcAttachPin(servoPin, servoChannel);
 
-  struct cat toto;
-  toto.cat_name = "Fofo";
-  toto.permission = 1;
-
-  garfield.chip = nbCats;
-  cats[nbCats++] = garfield;
-  toto.chip = nbCats;
-  cats[nbCats++] = toto;
-
-  Serial.println(toto.chip + toto.cat_name + toto.permission);
-  //Serial.println(cats);
+  //openServo();
+  M5.begin(true, false, true);
 }
 
 void setupAccessPoint() {
@@ -110,33 +147,21 @@ void configServerRoutes() {
   server.on("/deleteCat", deleteCat);
   server.onNotFound(handleNotFound);
 }
+/**** END SETUP ****/
 
-
-void loop(void) {
-  if (M5.BtnB.wasPressed()) {
-    M5.Lcd.clear(BLACK);
-    M5.Lcd.setTextColor(GREEN);
-    M5.Lcd.setCursor(0,0);
-    setupAccessPoint();
-    serverUp = 1;
-  }
-  
-  if(serverUp) {
-    server.handleClient();
-  }
-
-  if(M5.BtnC.wasPressed()) {
-    server.close();
-    serverUp = 0;
-    WiFi.mode(WIFI_STA);
-    WiFi.disconnect();
-    lcdDrawHome();
-  }
-  
-  M5.update();
+/**** SERVO FUNCTIONS ****/
+void openServo(){
+  ledcWrite(servoChannel, 32);
+  isOpen = 1;
+  delay(1000);
 }
-/**** END SETUP AND LOOP ****/
 
+void closeServo(){
+  ledcWrite(servoChannel, 1);
+  isOpen = 0;
+  delay(1000);
+}
+/**** END SERVO FUNCTIONS ****/
 
 /**** WEB HANDLERS ****/
 void handleHome() {
