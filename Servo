@@ -1,7 +1,7 @@
 #include <M5Stack.h>
 
-// the number of the LED pin
-const int ledPin = 2;  // 16 corresponds to GPIO16
+// the number of the servo pin
+const int ledPin = 2;  // 2 corresponds to GPIO2
 int angle = 0;
 // setting PWM properties
 const int freq = 50;
@@ -9,29 +9,21 @@ const int ledChannel = 0;
 const int resolution = 8;
  
 void setup(){
-  // configure LED PWM functionalitites
+  // configure servo PWM functionalitites
   ledcSetup(ledChannel, freq, resolution);
   
   // attach the channel to the GPIO to be controlled
   ledcAttachPin(ledPin, ledChannel);
 
   M5.begin(true, false, true);
-  M5.Lcd.setTextFont(4);
-  M5.Lcd.setCursor(70, 100);
-  M5.Lcd.print("Servo Example");
-  M5.Lcd.setTextColor(YELLOW);
-  M5.Lcd.setCursor(10, 10);
-  M5.Lcd.println("Test 1");
 }
 
 void ouvrir(){
-  M5.Lcd.print("Open");
   ledcWrite(ledChannel, 32);
   delay(1000);
 }
 
 void fermer(){
-  M5.Lcd.print("Close");
   ledcWrite(ledChannel, 1);
   delay(1000);
 }
@@ -43,15 +35,5 @@ void loop() {
   } else if (M5.BtnB.wasReleased()) {
     fermer();
   } else if (M5.BtnC.wasReleased()) {
-    M5.Lcd.clear(BLACK);
-    M5.Lcd.setCursor(70, 100);
-    M5.Lcd.setTextFont(4);
-    M5.Lcd.setTextColor(YELLOW);
-    M5.Lcd.print("Perdu");
-    M5.Lcd.setTextColor(GREEN);
-    M5.Lcd.print("Perdu");
-    M5.Lcd.setTextColor(RED);
-    M5.Lcd.print("Perdu");
-    M5.Lcd.setCursor(0, 0);
   }
 }
