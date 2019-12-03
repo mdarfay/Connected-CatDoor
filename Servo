@@ -18,12 +18,12 @@ void setup(){
   M5.begin(true, false, true);
 }
 
-void ouvrir(){
+void Open(){
   ledcWrite(ledChannel, 32);
   delay(1000);
 }
 
-void fermer(){
+void Close(){
   ledcWrite(ledChannel, 1);
   delay(1000);
 }
@@ -31,9 +31,9 @@ void fermer(){
 void loop() {
   M5.update();
    if (M5.BtnA.wasReleased()) {
-    ouvrir();
+    Open();
   } else if (M5.BtnB.wasReleased()) {
-    fermer();
+    Close();
   } else if (M5.BtnC.wasReleased()) {
   }
 }
