@@ -92,6 +92,9 @@ void updateCatInfos() {
   int cat_id = server.arg("cat_updated_id").toInt();
   int permission_updated = server.arg("permission").toInt();
   cats[cat_id].permission = permission_updated;
+
+	saveCatData(cat_id, false);
+
   permissionsMenu();
 }
 
@@ -123,7 +126,7 @@ void addCat() {
   
   cats[nbCats++] = c;
 
-  //saveCatData(nbCats - 1);
+  saveCatData(nbCats - 1, true);
 
   handleHome(); // go back to main menu
   lcdDrawConnectionPage();
@@ -136,6 +139,9 @@ void deletionMenu() {
 void deleteCat() {
   int cat_id = server.arg("cat_id").toInt();
   cats[cat_id] = cats[--nbCats];
+
+	deleteCatData(cat_id);
+
   handleHome();
 }
 

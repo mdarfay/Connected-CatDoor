@@ -22,20 +22,34 @@ void setupCatData() {
 }
 
 
-void saveCatData(int index) {
-  Serial.println("index of save:");
-  Serial.println(index);
+void saveCatData(int index, boolean updateNbCats) {
   struct cat c = cats[index];
   String index_string = String(index);
   String key = index_string + ".chip"; 
   preferences.putString(key.c_str(), c.chip.c_str());
   key = index_string + ".name";
-  Serial.println("name of save:");
-  Serial.println(c.cat_name.c_str());
-  Serial.println(c.cat_name);
   preferences.putString(key.c_str(), c.cat_name.c_str());
   key = index_string + ".permission";
   preferences.putInt(key.c_str(), c.permission);
-  key = "nbCats";
-  preferences.putInt(key.c_str(),index);
+
+  if(updateNbCats) {
+    key = "nbCats";
+    preferences.putInt(key.c_str(),nbCats);
+  }
+}
+
+void deleteCatData(int index) {
+  // Remove last cat
+  String i_string = String(nbCats);
+  String key = i_string + ".chip";
+  preferences.remove(key.c_str());
+  key = i_string + ".name";
+  preferences.remove(key.c_str());
+  key = i_string + ".permission";
+  preferences.remove(key.c_str());
+
+  if (index < nbCats) {
+    // Override last cat at index
+    saveCatData(index, true);
+  }
 }

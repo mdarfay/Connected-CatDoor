@@ -74,7 +74,7 @@ void setup(void) {
   Serial.begin(115200);
 
   preferences.begin("cat-data");
-  //setupCatData();
+  setupCatData();
 
   setupServo();
   setupAccessPoint();
