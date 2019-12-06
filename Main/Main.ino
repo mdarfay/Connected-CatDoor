@@ -17,8 +17,8 @@ struct cat cats[MAX_CAT];
 int nbCats = 0;
 
 /**** WIFI VAR ****/
-const IPAddress apIP(192, 168, 4, 1);
-const char *apssid = "NeKoDo";
+const IPAddress apIP(192, 168, 4, 3);
+const char *apssid = "NeKoDoM2";
 
 WebServer server(80);
 int serverUp = 0;
@@ -44,7 +44,7 @@ void loop(void) {
     M5.Lcd.clear(BLACK);
     M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setCursor(0,0);
-    setupAccessPoint();
+    turnOnAccessPoint();
     serverUp = 1;
   }
   
@@ -55,8 +55,7 @@ void loop(void) {
   if(M5.BtnC.wasPressed()) {
     server.close();
     serverUp = 0;
-    WiFi.mode(WIFI_STA);
-    WiFi.disconnect();
+    turnOffAccessPoint();
     lcdDrawHome();
   }
 
@@ -78,6 +77,7 @@ void setup(void) {
   //setupCatData();
 
   setupServo();
+  setupAccessPoint();
 
   lcdDrawHome();
 }

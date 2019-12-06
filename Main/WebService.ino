@@ -38,14 +38,21 @@ void setupAccessPoint() {
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   delay(100);
-  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-  WiFi.softAP(apssid);
   WiFi.mode(WIFI_AP);
+  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
   
   configServerRoutes();
+}
+
+void turnOnAccessPoint() {
+  WiFi.softAP(apssid);
   server.begin();
-  
+
   lcdDrawConnectionPage();
+}
+
+void turnOffAccessPoint() {
+  WiFi.softAPdisconnect(false);
 }
 
 void configServerRoutes() {
@@ -119,6 +126,7 @@ void addCat() {
   //saveCatData(nbCats - 1);
 
   handleHome(); // go back to main menu
+  lcdDrawConnectionPage();
 }
 
 void deletionMenu() {
@@ -126,9 +134,8 @@ void deletionMenu() {
 }
 
 void deleteCat() {
-  int cat_id = server.arg("cat_id").toInt();
-  cats[cat_id] = cats[nbCats];
-  nbCats--;
+  int cat_id_to_remove = server.arg("cat_id").toInt();
+  cats[cat_id_to_remove] = cats[--nbCats];
   handleHome();
 }
 
@@ -229,62 +236,3 @@ String makePage(String title, String contents) {
   return s;
 }
 /**** END HTML PAGES ****/
-
-/**** LCD DISPLAYS ****/
-void lcdDrawHome() {
-  M5.Lcd.clear(BLACK);
-  M5.Lcd.setTextColor(PINK);
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setCursor(65, 10);
-  M5.Lcd.println("Connected CatDoor");
-  M5.Lcd.setCursor(3, 55);
-  M5.Lcd.println("Press button B to start");
-  M5.Lcd.println("connection");
-  //Arrow, vertical
-  M5.Lcd.drawLine(160, 180, 160, 239, RED);
-  M5.Lcd.drawLine(159, 180, 159, 239, RED);
-  M5.Lcd.drawLine(161, 180, 161, 239, RED);
-  //Arrow, left
-  M5.Lcd.drawLine(160, 239, 140, 210, RED);
-  M5.Lcd.drawLine(159, 239, 139, 210, RED);
-  M5.Lcd.drawLine(161, 239, 141, 210, RED);
-  //Arrow, right
-  M5.Lcd.drawLine(160, 239, 180, 210, RED);
-  M5.Lcd.drawLine(159, 239, 179, 210, RED);
-  M5.Lcd.drawLine(161, 239, 181, 210, RED);
-}
-
-void lcdDrawConnectionPage() {
-  M5.Lcd.println("Access Point OK.");
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setCursor(40, 60);
-  M5.Lcd.setTextColor(WHITE);
-  M5.Lcd.print("Connect to \"");
-  M5.Lcd.print(apssid);
-  M5.Lcd.println("\",");
-  M5.Lcd.setCursor(20, 85);
-  M5.Lcd.println("and go to 192.168.4.1 !");
-  M5.Lcd.setCursor(120, 115);
-  M5.Lcd.setTextColor(ORANGE);
-  M5.Lcd.println("=^._.^=");
-
-  M5.Lcd.setTextColor(CYAN);
-  M5.Lcd.setCursor(60, 190);
-  M5.Lcd.println("Press button C to");
-  M5.Lcd.setCursor(100, 210);
-  M5.Lcd.println("disconnect");
-  //Arrow, vertical
-  M5.Lcd.drawLine(255, 215, 255, 239, CYAN);
-  M5.Lcd.drawLine(254, 215, 254, 239, CYAN);
-  M5.Lcd.drawLine(256, 215, 256, 239, CYAN);
-  //Arrow, left
-  M5.Lcd.drawLine(255, 239, 245, 230, CYAN);
-  M5.Lcd.drawLine(254, 239, 244, 230, CYAN);
-  M5.Lcd.drawLine(256, 239, 246, 230, CYAN);
-  //Arrow, right
-  M5.Lcd.drawLine(255, 239, 265, 230, CYAN);
-  M5.Lcd.drawLine(254, 239, 264, 230, CYAN);
-  M5.Lcd.drawLine(256, 239, 266, 230, CYAN);
-  
-}
-/**** END LCD DISPLAYS ****/
