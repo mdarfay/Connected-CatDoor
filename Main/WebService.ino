@@ -134,8 +134,8 @@ void deletionMenu() {
 }
 
 void deleteCat() {
-  int cat_id_to_remove = server.arg("cat_id").toInt();
-  cats[cat_id_to_remove] = cats[--nbCats];
+  int cat_id = server.arg("cat_id").toInt();
+  cats[cat_id] = cats[--nbCats];
   handleHome();
 }
 
