@@ -17,8 +17,8 @@ struct cat cats[MAX_CAT];
 int nbCats = 0;
 
 /**** WIFI VAR ****/
-const IPAddress apIP(192, 168, 4, 3);
-const char *apssid = "NeKoDoM2";
+const IPAddress apIP(192, 168, 4, 1);
+const char *apssid = "NeKoDo";
 
 WebServer server(80);
 int serverUp = 0;
@@ -38,32 +38,54 @@ const int resolution = 8;
 int isOpen = 1;
 
 
+/**** ROLE VAR ****/
+int isMaster;
+
+
 void loop(void) {
-  M5.update();
-  if (M5.BtnB.wasPressed()) {
-    M5.Lcd.clear(BLACK);
-    M5.Lcd.setTextColor(GREEN);
-    M5.Lcd.setCursor(0,0);
-    turnOnAccessPoint();
-    serverUp = 1;
-  }
+
+  if(isMaster) { // master
+    M5.update();
+    if (M5.BtnB.wasPressed()) {
+      M5.Lcd.clear(BLACK);
+      M5.Lcd.setTextColor(GREEN);
+      M5.Lcd.setCursor(0,0);
+      turnOnAccessPoint();
+      serverUp = 1;
+    }
+    
+    if(serverUp) {
+      server.handleClient();
+    }
   
-  if(serverUp) {
-    server.handleClient();
-  }
+    if(M5.BtnC.wasPressed()) {
+      server.close();
+      serverUp = 0;
+      turnOffAccessPoint();
+      lcdDrawHome();
+    }
+  
+    if(M5.BtnA.wasPressed()) {
+      if(isOpen) {
+        closeServo();
+      } else {
+        openServo();
+      }
+    }
 
-  if(M5.BtnC.wasPressed()) {
-    server.close();
-    serverUp = 0;
-    turnOffAccessPoint();
-    lcdDrawHome();
-  }
+    if(Serial.available()) {
+      checkChipFromSlave();
+    }
+    
+  } else { // slave
+    //TODO: when NFC detected, call checkChipFromMaster(String chip) ; returns the permission (0: can't go, 1: can go) in char
 
-  if(M5.BtnA.wasPressed()) {
-    if(isOpen) {
-      closeServo();
-    } else {
-      openServo();
+    if(M5.BtnA.wasPressed()) {
+      if(isOpen) {
+        closeServo();
+      } else {
+        openServo();
+      }
     }
   }
 }
@@ -72,12 +94,25 @@ void loop(void) {
 void setup(void) {
   m5.begin();
   Serial.begin(115200);
+  Serial2.begin(115200, SERIAL_8N1, 16, 17);
 
-  preferences.begin("cat-data");
-  setupCatData();
+  // Init role master or slave
+  
+  Serial2.write(0);
+  delay(1000); 
+  
+  if(Serial.available()) { // master
+    Serial.read(); // empty buffer
+    preferences.begin("cat-data");
+    setupCatData();
 
-  setupServo();
-  setupAccessPoint();
+    setupServo();
+    setupAccessPoint();
 
-  lcdDrawHome();
+    lcdDrawHome();
+
+    isMaster = 1;
+  } else { // slave
+    isMaster = 0;
+  }
 }
