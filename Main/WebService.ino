@@ -90,8 +90,10 @@ void displayCatInfos() {
 
 void updateCatInfos() {
   int cat_id = server.arg("cat_updated_id").toInt();
-  int permission_updated = server.arg("permission").toInt();
-  cats[cat_id].permission = permission_updated;
+  int permission_in_updated = server.arg("permission_in").toInt();
+  int permission_out_updated = server.arg("permission_out").toInt();
+  cats[cat_id].permission_in = permission_in_updated;
+  cats[cat_id].permission_out = permission_out_updated;
 
 	saveCatData(cat_id, false);
 
@@ -122,7 +124,8 @@ void addCat() {
   struct cat c;
   c.chip = server.arg("chip").toInt();
   c.cat_name = server.arg("cat_name");
-  c.permission = server.arg("permission").toInt();
+  c.permission_in = server.arg("permission_in").toInt();
+  c.permission_out = server.arg("permission_out").toInt();
   
   cats[nbCats++] = c;
 
@@ -193,13 +196,21 @@ String getCatInfosHTML(const int cat_id) {
   String s = "<br><hr><h2>Current cat: " + cats[cat_id].cat_name + "</h2>";
   s += "<form method=\"post\" action=\"updateCatInfos\">";
   s += "<input type=\"hidden\" value=\"" + String(cat_id) +"\" name=\"cat_updated_id\" />";
-  s += "<br><label>OUT ? :</label>";
-  if(cats[cat_id].permission) {
-    s += "<input type=\"radio\" name=\"permission\" value=\"1\" checked> Yes";
-    s += "<input type=\"radio\" name=\"permission\" value=\"0\"> No";
+  s += "<br><label>IN? :    </label>";
+  if(cats[cat_id].permission_in) {
+    s += "<input type=\"radio\" name=\"permission_in\" value=\"1\" checked> Yes";
+    s += "<input type=\"radio\" name=\"permission_in\" value=\"0\"> No";
   } else {
-    s += "<input type=\"radio\" name=\"permission\" value=\"1\"> Yes";
-    s += "<input type=\"radio\" name=\"permission\" value=\"0\" checked> No";
+    s += "<input type=\"radio\" name=\"permission_in\" value=\"1\"> Yes";
+    s += "<input type=\"radio\" name=\"permission_in\" value=\"0\" checked> No";
+  }
+  s += "<br><label>OUT? :</label>";
+  if(cats[cat_id].permission_out) {
+    s += "<input type=\"radio\" name=\"permission_out\" value=\"1\" checked> Yes";
+    s += "<input type=\"radio\" name=\"permission_out\" value=\"0\"> No";
+  } else {
+    s += "<input type=\"radio\" name=\"permission_out\" value=\"1\"> Yes";
+    s += "<input type=\"radio\" name=\"permission_out\" value=\"0\" checked> No";
   }
   s += "<br><br><input type=\"submit\" value=\"Update\"></form>";
   return s;
@@ -210,9 +221,12 @@ String getAddCatFormHTML(const int chip) {
   s += "<form method=\"post\" action=\"addCat\">";
   s += "<input type=\"hidden\" value=\"" + String(chip) +"\" name=\"chip\" />";
   s += "<label>Name: </label><input name=\"cat_name\" length=64 type=\"text\">";
-  s += "<br><br><label>OUT ? :</label>";
-  s += "<input type=\"radio\" name=\"permission\" value=\"1\" checked> Yes";
-  s += "<input type=\"radio\" name=\"permission\" value=\"0\"> No";
+  s += "<br><br><label>IN? :</label>";
+  s += "<input type=\"radio\" name=\"permission_in\" value=\"1\" checked> Yes";
+  s += "<input type=\"radio\" name=\"permission_in\" value=\"0\"> No";
+  s += "<br><br><label>OUT? :</label>";
+  s += "<input type=\"radio\" name=\"permission_out\" value=\"1\" checked> Yes";
+  s += "<input type=\"radio\" name=\"permission_out\" value=\"0\"> No";
   s += "<br><br><input type=\"submit\" value=\"Save\"></form>";
   return s;
 }

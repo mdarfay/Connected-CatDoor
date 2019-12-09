@@ -10,7 +10,8 @@
 struct cat {
   String chip;
   String cat_name;
-  unsigned int permission;
+  unsigned int permission_in;
+  unsigned int permission_out;
 };
 
 struct cat cats[MAX_CAT];
@@ -39,7 +40,7 @@ int isOpen = 1;
 
 
 /**** ROLE VAR ****/
-int isMaster;
+int isMaster; //we consider slave is out, it lets the cat get IN
 
 
 void loop(void) {
@@ -97,9 +98,8 @@ void setup(void) {
   Serial2.begin(115200, SERIAL_8N1, 16, 17);
 
   // Init role master or slave
-  
   Serial2.write(0);
-  delay(1000); 
+  delay(3000); 
   
   if(Serial.available()) { // master
     Serial.read(); // empty buffer
@@ -114,5 +114,6 @@ void setup(void) {
     isMaster = 1;
   } else { // slave
     isMaster = 0;
+    M5.Lcd.println("SLAVE");
   }
 }

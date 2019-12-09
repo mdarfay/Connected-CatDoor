@@ -6,7 +6,7 @@ void checkChipFromSlave() {
 
  for(int i=0; i<nbCats; i++) {
   if(strcmp(cats[i].chip.c_str(), chip.c_str())==0) {
-    Serial.write(cats[i].permission); // TODO: put permission OUT!
+    Serial.write(cats[i].permission_in); // send permission to get IN to slave (assume slave is outside and let the cats in)
     break;
   }
  }
