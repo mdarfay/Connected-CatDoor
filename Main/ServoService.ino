@@ -17,11 +17,11 @@ void setupServo() {
 void openServo(){
   ledcWrite(servoChannel, 16);
   isOpen = 1;
-  delay(1000);
+  //delay(1000);
 }
 
 void closeServo(){
   ledcWrite(servoChannel, 1);
   isOpen = 0;
-  delay(1000);
+  //delay(1000);
 }
