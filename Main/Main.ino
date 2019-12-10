@@ -44,9 +44,9 @@ int isMaster; //we consider slave is out, it lets the cat get IN
 
 
 void loop(void) {
+  M5.update();
 
   if(isMaster) { // master
-    M5.update();
     if (M5.BtnB.wasPressed()) {
       M5.Lcd.clear(BLACK);
       M5.Lcd.setTextColor(GREEN);
@@ -80,7 +80,7 @@ void loop(void) {
     
   } else { // slave
     //TODO: when NFC detected, call checkChipFromMaster(String chip) ; returns the permission (0: can't go, 1: can go) in char
-
+  
     if(M5.BtnA.wasPressed()) {
       if(isOpen) {
         closeServo();
@@ -99,14 +99,15 @@ void setup(void) {
 
   // Init role master or slave
   Serial2.write(0);
-  delay(3000); 
+  delay(1000); 
+
+  setupServo();
   
   if(Serial.available()) { // master
     Serial.read(); // empty buffer
     preferences.begin("cat-data");
     setupCatData();
 
-    setupServo();
     setupAccessPoint();
 
     lcdDrawHome();
