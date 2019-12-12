@@ -1,9 +1,9 @@
 // Returns the string scanned by the nfc captor
 String getTagId() {
-  Serial.println("\nScan a cat tag\n");
+  //Serial.println("\nScan a cat tag\n");
   NfcTag tag = nfc.read();
   String id = tag.getUidString();
-  Serial.println("id detected : " + id);
+  //Serial.println("id detected : " + id);
   return id;
 }
 

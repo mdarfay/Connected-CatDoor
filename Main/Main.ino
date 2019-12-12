@@ -1,11 +1,11 @@
 #include <M5Stack.h>
-#include <NfcAdapter.h>
-#include <PN532/PN532/PN532.h>
-#include <PN532/PN532_I2C/PN532_I2C.h>
 #include <Preferences.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
+#include <NfcAdapter.h>
+#include <PN532/PN532/PN532.h>
+#include <PN532/PN532_I2C/PN532_I2C.h>
 
 #define MAX_CAT 10
 #define TIME_OPEN 5000
@@ -43,6 +43,8 @@ const int resolution = 8;
 int isOpen = 1;
 
 /**** NFC VAR ****/
+//PN532_SPI pn532spi(SPI, 10);
+//NfcAdapter nfc = NfcAdapter(pn532spi);
 PN532_I2C pn532_i2c(Wire);
 NfcAdapter nfc = NfcAdapter(pn532_i2c);
 
@@ -51,19 +53,18 @@ int isMaster; //we consider slave is out, it lets the cat get IN
 
 void setup(void) {
   m5.begin();
-  Serial.begin(115200);
-  Serial2.begin(115200, SERIAL_8N1, 16, 17);
+  nfc.begin();
+  setupServo();
+  Serial.begin(9600);
+  Serial2.begin(9600, SERIAL_8N1, 16, 17);
+
 
   // Init role master or slave
-  Serial2.write(0);
-  delay(1000); 
-
-  setupServo();
-  //nfc.begin();
+  Serial.write(0);
+  delay(1000);
 
   // *** MASTER ***
-  if(Serial.available()) {
-    Serial.read(); // empty buffer
+  if(!Serial2.available()) {
     preferences.begin("cat-data");
     setupCatData();
 
@@ -75,21 +76,20 @@ void setup(void) {
   }
   // *** SLAVE *** 
   else { // slave
+    Serial2.read(); // empty buffer
     isMaster = 0;
     M5.Lcd.println("SLAVE");
   }
-
-  M5.Lcd.println("Setup done");
 }
 
 
 
 void loop(void) {
   M5.update();
-
+  
   // *** MASTER ***
   if(isMaster) {
-    if (M5.BtnB.wasPressed()) {
+    if(M5.BtnB.wasReleased()) {
       M5.Lcd.clear(BLACK);
       M5.Lcd.setTextColor(GREEN);
       M5.Lcd.setCursor(0,0);
@@ -101,14 +101,14 @@ void loop(void) {
       server.handleClient();
     }
   
-    if(M5.BtnC.wasPressed()) {
+    if(M5.BtnC.wasReleased()) {
       server.close();
       serverUp = 0;
       turnOffAccessPoint();
       lcdDrawHome();
     }
   
-    if(M5.BtnA.wasPressed()) {
+    if(M5.BtnA.wasReleased()) {
       if(isOpen) {
         closeServo();
       } else {
@@ -119,35 +119,39 @@ void loop(void) {
     if(Serial.available()) {
       checkChipFromSlave();
     }
-
-//    if (nfc.tagPresent()) {
-//       String chipScanned = getTagId();
-//       char permission_to_get_out = getPermissionFromChip(chipScanned, 0);
-//       if(permission_to_get_out == 1) {
-//         openServo();
-//         delay(TIME_OPEN);
-//         closeServo();
-//       }
-//    }
+    if (nfc.tagPresent()) {
+       String chipScanned = getTagId();
+       M5.Lcd.println(chipScanned);
+       char permission_to_get_out = getPermissionFromChip(chipScanned, 0);
+       if(isOpen) {
+        closeServo();
+      } else {
+        openServo();
+      }
+       if(permission_to_get_out == 1) {
+         openServo();
+         delay(TIME_OPEN);
+         closeServo();
+       }
+     }
     
   } // *** SLAVE ***
   else {
-    M5.update();
-    
-//    if (nfc.tagPresent()) {
-//       String chipScanned = getTagId();
-//       M5.Lcd.println(chipScanned);
-//       char permission_to_get_in = checkChipFromMaster(chipScanned);
-//       M5.Lcd.print("Permission");
-//       M5.Lcd.println(permission_to_get_in);
-//       if(permission_to_get_in == 1) {
-//         openServo();
-//         delay(TIME_OPEN);
-//         closeServo();
-//       }
-//    }
+    if (nfc.tagPresent()) {
+       String chipScanned = getTagId();
+       M5.Lcd.println(chipScanned);
+       char permission_to_get_in = checkChipFromMaster(chipScanned);
+       M5.Lcd.print("Permission");
+       M5.Lcd.println(permission_to_get_in);
+       if(permission_to_get_in == 1) {
+         openServo();
+         delay(TIME_OPEN);
+         closeServo();
+       }
+    }
   
     if(M5.BtnA.wasReleased()) {
+      M5.Lcd.print("A");
       if(isOpen) {
         closeServo();
       } else {
@@ -155,4 +159,6 @@ void loop(void) {
       }
     }
   }
+
+  M5.update();
 }
