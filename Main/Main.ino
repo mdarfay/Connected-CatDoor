@@ -16,6 +16,7 @@ struct cat {
   String cat_name;
   unsigned int permission_in;
   unsigned int permission_out;
+  unsigned int is_out;
 };
 
 struct cat cats[MAX_CAT];

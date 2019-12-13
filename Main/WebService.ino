@@ -66,6 +66,7 @@ void configServerRoutes() {
   server.on("/addCat", addCat);
   server.on("/deletionMenu", deletionMenu);
   server.on("/deleteCat", deleteCat);
+  server.on("/catsLocation", catsLocation);
   server.onNotFound(handleNotFound);
 }
 /**** END SET UP ****/
@@ -159,6 +160,7 @@ void addCat() {
   c.cat_name = server.arg("cat_name");
   c.permission_in = server.arg("permission_in").toInt();
   c.permission_out = server.arg("permission_out").toInt();
+  c.is_out = -1;
   
   cats[nbCats++] = c;
 
@@ -180,6 +182,10 @@ void deleteCat() {
 	deleteCatData(cat_id);
 
   handleHome();
+}
+
+void catsLocation() {
+  server.send(200, "text/html", makePage( "Cat finder", getCatLocationHTML() ));
 }
 
 void handleNotFound() {
@@ -206,6 +212,7 @@ String getHomeHTML() {
   String s = "<h1>Welcome in your Connected Catdoor manager !</h1>";
   s += "<form>";
   s += "<button type=\"submit\" formaction=\"permissions\">MANAGE PERMISSIONS</button>";
+  s += "<br><br><button type=\"submit\" formaction=\"catsLocation\">FIND YOUR CATS</button>";
   s += "<br><br><button type=\"submit\" formaction=\"scanNotice\">ADD A CAT</button>";
   s += "<br><br><button type=\"submit\" formaction=\"deletionMenu\">REMOVE A CAT</button>";
   s += "</form>";
@@ -277,6 +284,24 @@ String getDeletionMenuHTML() {
   }
   s += "</select>";
   s += "<input type=\"submit\" value=\"Remove\"></form>";
+  return s;
+}
+
+String getCatLocationHTML() {
+  String s = "<form method=\"post\" action=\"home\"><button type=\"submit\">Home</button></form>";
+  s += "<h2>Find where your cats are</h2>";
+  for(int i=0; i<nbCats; i++) {
+    s += "<p>" + cats[i].cat_name + ": ";
+    if (cats[i].is_out == 0) {
+      s += "IN";
+    } else if (cats[i].is_out == 1) {
+      s += "OUT";
+    } else {
+      s += "UNKNOWN";
+    }
+    s += "</p>";
+  }
+  s += "<form method=\"post\" action=\"catsLocation\"><button type=\"submit\">Refresh</button></form>";
   return s;
 }
 
