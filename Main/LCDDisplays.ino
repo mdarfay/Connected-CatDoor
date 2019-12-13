@@ -1,24 +1,50 @@
 void lcdDrawHome() {
   M5.Lcd.clear(BLACK);
-  M5.Lcd.setTextColor(PINK);
+  lcdDrawBtnBInfos();
+  lcdDrawBtnAInfos();
+}
+
+void lcdDrawBtnBInfos() {
   M5.Lcd.setTextSize(2);
   M5.Lcd.setCursor(65, 10);
+  M5.Lcd.setTextColor(RED);
   M5.Lcd.println("Connected CatDoor");
-  M5.Lcd.setCursor(3, 55);
+  M5.Lcd.setCursor(3, 100);
+  M5.Lcd.setTextColor(PINK);
   M5.Lcd.println("Press button B to start");
   M5.Lcd.println("connection");
   //Arrow, vertical
-  M5.Lcd.drawLine(160, 180, 160, 239, RED);
-  M5.Lcd.drawLine(159, 180, 159, 239, RED);
-  M5.Lcd.drawLine(161, 180, 161, 239, RED);
+  M5.Lcd.drawLine(160, 180, 160, 239, PINK);
+  M5.Lcd.drawLine(159, 180, 159, 239, PINK);
+  M5.Lcd.drawLine(161, 180, 161, 239, PINK);
   //Arrow, left
-  M5.Lcd.drawLine(160, 239, 140, 210, RED);
-  M5.Lcd.drawLine(159, 239, 139, 210, RED);
-  M5.Lcd.drawLine(161, 239, 141, 210, RED);
+  M5.Lcd.drawLine(160, 239, 140, 210, PINK);
+  M5.Lcd.drawLine(159, 239, 139, 210, PINK);
+  M5.Lcd.drawLine(161, 239, 141, 210, PINK);
   //Arrow, right
-  M5.Lcd.drawLine(160, 239, 180, 210, RED);
-  M5.Lcd.drawLine(159, 239, 179, 210, RED);
-  M5.Lcd.drawLine(161, 239, 181, 210, RED);
+  M5.Lcd.drawLine(160, 239, 180, 210, PINK);
+  M5.Lcd.drawLine(159, 239, 179, 210, PINK);
+  M5.Lcd.drawLine(161, 239, 181, 210, PINK);
+}
+
+void lcdDrawBtnAInfos() {
+  M5.Lcd.setTextColor(YELLOW);
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.setCursor(3, 55);
+  M5.Lcd.println("Press button A to open");
+  M5.Lcd.println("manually");
+  //Arrow, vertical
+  M5.Lcd.drawLine(65, 180, 65, 239, YELLOW);
+  M5.Lcd.drawLine(64, 180, 64, 239, YELLOW);
+  M5.Lcd.drawLine(66, 180, 66, 239, YELLOW);
+  //Arrow, left
+  M5.Lcd.drawLine(65, 239, 45, 210, YELLOW);
+  M5.Lcd.drawLine(64, 239, 44, 210, YELLOW);
+  M5.Lcd.drawLine(66, 239, 46, 210, YELLOW);
+  //Arrow, right
+  M5.Lcd.drawLine(65, 239, 85, 210, YELLOW);
+  M5.Lcd.drawLine(64, 239, 84, 210, YELLOW);
+  M5.Lcd.drawLine(66, 239, 86, 210, YELLOW);
 }
 
 void lcdDrawConnectionPage() {

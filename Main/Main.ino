@@ -78,7 +78,9 @@ void setup(void) {
   else {
     Serial2.read(); // empty buffer
     isMaster = 0;
+    M5.Lcd.clear(BLACK);
     M5.Lcd.println("SLAVE");
+    lcdDrawBtnAInfos();
   }
 }
 
@@ -109,7 +111,6 @@ void loop(void) {
     }
   
     if(M5.BtnA.wasReleased()) {
-      M5.Lcd.println("A");
       if(isOpen) {
         closeServo();
       } else {
@@ -118,7 +119,6 @@ void loop(void) {
     }
 
     if(Serial.available()) {
-      M5.Lcd.println("DATA");
       sendPermissionToSlave();
     }
     if (nfc.tagPresent(100)) {
