@@ -17,7 +17,9 @@ void setupCatData() {
       c.permission_in = preferences.getInt(key.c_str());
       key = i_string + ".permission_out";
       c.permission_out = preferences.getInt(key.c_str());
-
+      key = i_string + ".is_out";
+      c.is_out = preferences.getInt(key.c_str());
+      
       cats[i] = c;
     }
   }
@@ -33,8 +35,10 @@ void saveCatData(int index, boolean updateNbCats) {
   preferences.putString(key.c_str(), c.cat_name.c_str());
   key = index_string + ".permission_in";
   preferences.putInt(key.c_str(), c.permission_in);
-    key = index_string + ".permission_out";
+  key = index_string + ".permission_out";
   preferences.putInt(key.c_str(), c.permission_out);
+  key = index_string + ".is_out";
+  preferences.putInt(key.c_str(), c.is_out);
 
   if(updateNbCats) {
     key = "nbCats";
@@ -51,7 +55,9 @@ void deleteCatData(int index) {
   preferences.remove(key.c_str());
   key = i_string + ".permission_in";
   preferences.remove(key.c_str());
-    key = i_string + ".permission_out";
+  key = i_string + ".permission_out";
+  preferences.remove(key.c_str());
+  key = i_string + ".is_out";
   preferences.remove(key.c_str());
 
   if (index < nbCats) {
