@@ -52,19 +52,19 @@ NfcAdapter nfc = NfcAdapter(pn532_i2c);
 int isMaster; //we consider slave is out, it lets the cat get IN
 
 void setup(void) {
-  m5.begin();
+  m5.begin(true, true, true);
   nfc.begin();
   setupServo();
-  Serial.begin(9600);
-  Serial2.begin(9600, SERIAL_8N1, 16, 17);
+  Serial.begin(115200);
+  Serial2.begin(115200, SERIAL_8N1, 16, 17);
 
 
   // Init role master or slave
-  Serial.write(0);
+  Serial2.write(0);
   delay(1000);
 
   // *** MASTER ***
-  if(!Serial2.available()) {
+  if(Serial.available()) {
     preferences.begin("cat-data");
     setupCatData();
 
@@ -75,7 +75,7 @@ void setup(void) {
     isMaster = 1;
   }
   // *** SLAVE *** 
-  else { // slave
+  else {
     Serial2.read(); // empty buffer
     isMaster = 0;
     M5.Lcd.println("SLAVE");
@@ -109,6 +109,7 @@ void loop(void) {
     }
   
     if(M5.BtnA.wasReleased()) {
+      M5.Lcd.println("A");
       if(isOpen) {
         closeServo();
       } else {
@@ -117,30 +118,24 @@ void loop(void) {
     }
 
     if(Serial.available()) {
-      checkChipFromSlave();
+      M5.Lcd.println("DATA");
+      sendPermissionToSlave();
     }
-    if (nfc.tagPresent()) {
-       String chipScanned = getTagId();
-       M5.Lcd.println(chipScanned);
-       char permission_to_get_out = getPermissionFromChip(chipScanned, 0);
-       if(isOpen) {
-        closeServo();
-      } else {
-        openServo();
-      }
-       if(permission_to_get_out == 1) {
-         openServo();
-         delay(TIME_OPEN);
-         closeServo();
-       }
-     }
-    
+    if (nfc.tagPresent(100)) {
+        String chipScanned = getTagId();
+        char permission_to_get_out = getPermissionFromChip(chipScanned, 0);
+        if(permission_to_get_out == 1) {
+          openServo();
+          delay(TIME_OPEN);
+          closeServo();
+         }
+     }    
   } // *** SLAVE ***
   else {
-    if (nfc.tagPresent()) {
+    if (nfc.tagPresent(100)) {
        String chipScanned = getTagId();
        M5.Lcd.println(chipScanned);
-       char permission_to_get_in = checkChipFromMaster(chipScanned);
+       int permission_to_get_in = sendChipToMaster(chipScanned);
        M5.Lcd.print("Permission");
        M5.Lcd.println(permission_to_get_in);
        if(permission_to_get_in == 1) {
@@ -159,6 +154,4 @@ void loop(void) {
       }
     }
   }
-
-  M5.update();
 }

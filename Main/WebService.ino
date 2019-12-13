@@ -112,17 +112,20 @@ void scanCat() {
   M5.Lcd.setTextColor(WHITE);
   M5.Lcd.println("Scan now!");
 
-  // TODO : SCAN HERE TO ADD A CAT
-
-  int chip = 0; //FIXME chip = the thing scanned, identifying the cat
-  String s = getAddCatFormHTML(chip);
+  // active wait, waiting for user to scan the cat
+  while ( !nfc.tagPresent() );
+  
+  String chipScanned = getTagId();
+  
+  String s = getAddCatFormHTML(chipScanned);
+  M5.Lcd.clear(BLACK);
   server.send(200, "text/html", makePage("Add cat", s));
 }
 
 void addCat() {
   // retrieve form informations
   struct cat c;
-  c.chip = server.arg("chip").toInt();
+  c.chip = server.arg("chip");
   c.cat_name = server.arg("cat_name");
   c.permission_in = server.arg("permission_in").toInt();
   c.permission_out = server.arg("permission_out").toInt();
@@ -216,10 +219,11 @@ String getCatInfosHTML(const int cat_id) {
   return s;
 }
 
-String getAddCatFormHTML(const int chip) {
+String getAddCatFormHTML(const String chip) {
   String s = "<h2>Enter informations for scanned cat</h2>";
   s += "<form method=\"post\" action=\"addCat\">";
-  s += "<input type=\"hidden\" value=\"" + String(chip) +"\" name=\"chip\" />";
+  s += "<label>" + chip +"</label>";
+  s += "<input type=\"hidden\" value=\"" + chip +"\" name=\"chip\" />";
   s += "<label>Name: </label><input name=\"cat_name\" length=64 type=\"text\">";
   s += "<br><br><label>IN? :</label>";
   s += "<input type=\"radio\" name=\"permission_in\" value=\"1\" checked> Yes";
