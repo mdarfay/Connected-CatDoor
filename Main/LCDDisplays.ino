@@ -48,7 +48,6 @@ void lcdDrawBtnAInfos() {
 }
 
 void lcdDrawConnectionPage() {
-  M5.Lcd.println("Access Point OK.");
   M5.Lcd.setTextSize(2);
   M5.Lcd.setCursor(40, 60);
   M5.Lcd.setTextColor(WHITE);

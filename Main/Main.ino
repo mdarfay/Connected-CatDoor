@@ -146,7 +146,6 @@ void loop(void) {
     }
   
     if(M5.BtnA.wasReleased()) {
-      M5.Lcd.print("A");
       if(isOpen) {
         closeServo();
       } else {

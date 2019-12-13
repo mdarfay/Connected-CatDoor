@@ -101,7 +101,8 @@ void updateCatInfos() {
 }
 
 void scanNotice() {
-  String s = "<p>Grab your cat and prepare for scanning! Follow instructions on LCD display on your Connected CatDoor.</p>";
+  String s = "<h3>Grab your cat and prepare for scanning!</h3>";
+  s += "<p>Follow instructions on LCD display of M5Stack on your Connected CatDoor.</p>";
   s += "<br><form method=\"post\" action=\"scanCat\"><button type=\"submit\">Begin scan</button></form>";
   server.send(200, "text/html", makePage("Scan", s));
 }
@@ -110,16 +111,45 @@ void scanCat() {
   M5.Lcd.clear(BLACK);
   M5.Lcd.setCursor(0,0);
   M5.Lcd.setTextColor(WHITE);
-  M5.Lcd.println("Scan now!");
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.println("   Put your cat near the");
+  M5.Lcd.println("       chip captor.");
+  M5.Lcd.println("");
+  M5.Lcd.println("   You have 10s to scan");
+  M5.Lcd.println("        your cat.");
 
-  // active wait, waiting for user to scan the cat
-  while ( !nfc.tagPresent() );
-  
-  String chipScanned = getTagId();
-  
-  String s = getAddCatFormHTML(chipScanned);
+  int scanOK = 0;
+  String chipScanned = "None";
+  M5.Lcd.setTextSize(3);
+  for(int i=10; i>0; i--) {
+    if (nfc.tagPresent(100) && !scanOK) {
+      scanOK = 1;
+      chipScanned = getTagId();
+      M5.Lcd.setCursor(100, 180);
+      M5.Lcd.println("SCAN OK");
+    }
+    
+    M5.Lcd.setCursor(150, 130);
+    M5.Lcd.setTextColor(BLACK);
+    int tmp = i+1;
+    M5.Lcd.println(tmp);
+    M5.Lcd.setCursor(150, 130);
+    M5.Lcd.setTextColor(WHITE);
+    M5.Lcd.println(i);
+    delay(1000);
+  }
+
   M5.Lcd.clear(BLACK);
-  server.send(200, "text/html", makePage("Add cat", s));
+  if (scanOK) {
+    String s = getAddCatFormHTML(chipScanned);
+    M5.Lcd.setCursor(0,0);
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.println(" Look on your phone/computer to finish adding your cat!");
+    server.send(200, "text/html", makePage("Add cat", s));
+  } else {
+    lcdDrawConnectionPage();
+    handleHome();
+  }
 }
 
 void addCat() {
@@ -134,6 +164,7 @@ void addCat() {
 
   saveCatData(nbCats - 1, true);
 
+  M5.Lcd.clear(BLACK);
   handleHome(); // go back to main menu
   lcdDrawConnectionPage();
 }
@@ -222,8 +253,8 @@ String getCatInfosHTML(const int cat_id) {
 String getAddCatFormHTML(const String chip) {
   String s = "<h2>Enter informations for scanned cat</h2>";
   s += "<form method=\"post\" action=\"addCat\">";
-  s += "<label>" + chip +"</label>";
-  s += "<input type=\"hidden\" value=\"" + chip +"\" name=\"chip\" />";
+  s += "<label>Chip scanned: " + chip +"</label>";
+  s += "<br><input type=\"hidden\" value=\"" + chip +"\" name=\"chip\" />";
   s += "<label>Name: </label><input name=\"cat_name\" length=64 type=\"text\">";
   s += "<br><br><label>IN? :</label>";
   s += "<input type=\"radio\" name=\"permission_in\" value=\"1\" checked> Yes";
