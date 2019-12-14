@@ -135,10 +135,10 @@ void loop(void) {
   else {
     if (nfc.tagPresent(100)) {
        String chipScanned = getTagId();
-       M5.Lcd.println(chipScanned);
+       //M5.Lcd.println(chipScanned);
        int permission_to_get_in = sendChipToMaster(chipScanned);
-       M5.Lcd.print("Permission");
-       M5.Lcd.println(permission_to_get_in);
+       //M5.Lcd.print("Permission");
+       M5.Lcd.print(permission_to_get_in);
        if(permission_to_get_in == 1) {
          openServo();
          delay(TIME_OPEN);
