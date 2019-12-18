@@ -125,6 +125,7 @@ void loop(void) {
     if (nfc.tagPresent(100)) {
         String chipScanned = getTagId();
         char permission_to_get_out = getPermissionFromChip(chipScanned, 0);
+        M5.Lcd.print(permission_to_get_out);
         if(permission_to_get_out == 1) {
           openServo();
           delay(TIME_OPEN);

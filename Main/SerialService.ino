@@ -5,8 +5,6 @@ void sendPermissionToSlave() {
  }
  //M5.Lcd.println(chip);
  int permission = getPermissionFromChip(chip, 1);
- //M5.Lcd.print("permission: ");
- //M5.Lcd.print(permission);
  Serial.write(permission); // send permission to get IN to slave (assume slave is outside and let the cats in)
 }
 

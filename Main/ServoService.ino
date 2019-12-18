@@ -9,21 +9,21 @@ void setupServo() {
   ledcDetachPin(SPEAKER_PIN);
   pinMode(SPEAKER_PIN, INPUT);
 
-  openServo();
+  closeServo();
   M5.begin(true, false, true);
 }
 
 
 void openServo(){
-  ledcWrite(servoChannel, 16);
-  //32
+  ledcWrite(servoChannel, 34);
+  //master 34, slave 16
   isOpen = 1;
   //delay(1000);
 }
 
 void closeServo(){
-  ledcWrite(servoChannel, 1);
-  //22
+  ledcWrite(servoChannel, 24);
+  //master 24, slave 1
   isOpen = 0;
   //delay(1000);
 }
