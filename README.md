@@ -1,5 +1,6 @@
 # Connected-CatDoor: NEKODO
 Connected catdoor project, realized during IoT course at INSA Rennes
+
 Authors: Nathan BALIX, Matthieu DARFAY, Zoé LEVREL, Mathieu RISY
 
 ## Origin of the project
